@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title></title>
+<style>
+
+body {
+  background:#000;
+  font: 10px sans-serif;
+  width:960px;
+  margin:0 auto;
+}
+
+path {
+  fill-opacity: 0;
+  stroke-width:2;
+  stroke:#eee;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script> 
+<script src="simplex-noise.min.js"></script>
+<script>
+var margin = {top: 100, right: 20, bottom: 100, left: 80},
+    width = 960 - margin.left - margin.right,
+    height = window.innerHeight - margin.top - margin.bottom;
+
+var config = { "shades": "grey on black", "waves": parseInt(height/5), "width": 100, "x": 1, "y": 5, "dy": 5, "amplitude": 5, "velocity": 25};
+var gui = new dat.GUI();
+gui.close()
+shadesChanger = gui.add(config, "shades", ["grey on black", "black on grey"]).listen();
+shadesChanger.onChange(function(value) {
+  if(value == "black on grey") {
+    d3.select("body").style("background", "#eee")
+    d3.selectAll("path").style("stroke", "#000")
+  } else {
+    d3.select("body").style("background", "")
+    d3.selectAll("path").style("stroke", "")
+  }
+})
+
+gui.add(config, "waves", 1, config["waves"]+40).listen();
+gui.add(config, "width", 2, width/8).listen();
+gui.add(config, "x", 1, 100).listen();
+gui.add(config, "y", 1, 100).listen();
+gui.add(config, "dy", 0, 100).listen();
+gui.add(config, "amplitude", 0, 100).listen();
+gui.add(config, "velocity", 0, 100).listen();
+config.random = function(){
+  gui.__controllers.forEach(function(c){
+    if(c.property!="random" && c.property!="width" && c.property!="shades"){
+      c.setValue(Math.floor(Math.random() * c.__max) + c.__min)
+    }
+  })
+}
+gui.add(config, "random")
+
+var zoom = d3.behavior.zoom()
+.scale(config["dy"])
+.scaleExtent([0, 100])
+.on("zoom", function(d,i) {
+  config["amplitude"] = Math.floor(d3.event.scale)
+});
+
+var drag = d3.behavior.drag()
+.on("drag", function() {
+  if(config["x"] + d3.event.dx > 0) config["x"] += d3.event.dx
+  if(config["y"] + d3.event.dy > 0) config["y"] += d3.event.dy
+})
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .call(zoom)
+    .call(drag)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+var path = svg.selectAll("path"),
+    simplex = new SimplexNoise()
+
+d3.timer(function(t){
+  if(config["velocity"] == 0) return
+
+  data = []
+  for (y = 1; y <= config["waves"]; y++) {
+    waves = []
+    for (x = 1; x <= config["width"]; x++) {
+      waves.push([
+        x * 8,
+        (y*config["dy"])+simplex.noise3D(x/config["x"], y/config["y"], t/((99-config["velocity"])*100)) * config["amplitude"]
+      ])
+    }
+    data.push(waves)
+  }
+
+  path = path
+  .data(data)
+
+  path.enter()
+  .insert("path")
+
+  path
+  .attr("d", function(d) { return "M" + d.map(function(d){ return d.join(",") }).join("L") })
+
+  path.exit()
+  .remove()
+})
+
+</script>

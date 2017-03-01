@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Making a Bar Chart with d3.js - 2</title>
+</head>
+<body>
+
+<button id="sort">Sort</button>
+<select id="grupa" multiple>
+    <option value="Grupa 1" selected>Grupa 1</option>
+    <option value="Grupa 2" selected>Grupa 2</option>
+    <option value="Grupa 3" selected>Grupa 3</option>
+</select>
+<select id="dim">
+    <option value="dim1">Dimensiunea 1</option>
+    <option value="dim2">Dimensiunea 2</option>
+</select>
+
+<script src="d3.v3.js"></script>
+<script>
+    var data = {"Grupa 1": [{"dim1":6,"dim2":6},{"dim1":10,"dim2":10},{"dim1":3,"dim2":4},{"dim1":9,"dim2":8},{"dim1":0,
+        "dim2":6},{"dim1":4,"dim2":5},{"dim1":5,"dim2":5},{"dim1":6,"dim2":8},{"dim1":8,"dim2":7},{"dim1":0,"dim2":4},
+        {"dim1":5,"dim2":7},{"dim1":9,"dim2":9},{"dim1":0,"dim2":4},{"dim1":6,"dim2":5},{"dim1":3,"dim2":4},{"dim1":10,
+            "dim2":6},{"dim1":7,"dim2":4},{"dim1":7,"dim2":9},{"dim1":9,"dim2":10},{"dim1":0,"dim2":4},{"dim1":9,
+            "dim2":5},{"dim1":8,"dim2":7},{"dim1":7,"dim2":8},{"dim1":5,"dim2":7},{"dim1":0,"dim2":4},{"dim1":7,
+            "dim2":7},{"dim1":4,"dim2":0}],
+        "Grupa 2": [{"dim1":4,"dim2":6},{"dim1":5,"dim2":4},{"dim1":5,"dim2":0},{"dim1":7,"dim2":6},{"dim1":6,"dim2":6},
+            {"dim1":9,"dim2":8},{"dim1":7,"dim2":9},{"dim1":9,"dim2":7},{"dim1":10,"dim2":10},{"dim1":7,"dim2":8},
+            {"dim1":8,"dim2":6},{"dim1":5,"dim2":7},{"dim1":5,"dim2":6},{"dim1":6,"dim2":10},{"dim1":3,"dim2":0},
+            {"dim1":7,"dim2":7},{"dim1":7,"dim2":6},{"dim1":6,"dim2":6},{"dim1":0,"dim2":6},{"dim1":4,"dim2":0},
+            {"dim1":0,"dim2":4},{"dim1":4,"dim2":4},{"dim1":0,"dim2":4}],
+        "Grupa 3": [{"dim1":6,"dim2":7},{"dim1":4,"dim2":6},{"dim1":6,"dim2":4},{"dim1":0,"dim2":4},{"dim1":6,"dim2":6},
+            {"dim1":6,"dim2":5},{"dim1":7,"dim2":7},{"dim1":4,"dim2":4},{"dim1":0,"dim2":6},{"dim1":7,"dim2":8},
+            {"dim1":8,"dim2":7},{"dim1":4,"dim2":5},{"dim1":4,"dim2":7},{"dim1":5,"dim2":4},{"dim1":7,"dim2":8},
+            {"dim1":4,"dim2":6},{"dim1":5,"dim2":5},{"dim1":9,"dim2":4},{"dim1":0,"dim2":4},{"dim1":6,"dim2":4},
+            {"dim1":4,"dim2":6},{"dim1":6,"dim2":4},{"dim1":0,"dim2":4}]}
+
+    var note = data["Grupa 1"].concat(data["Grupa 2"]).concat(data["Grupa 3"])
+    var accesor = function(d) { return d.dim1 }
+
+    l = note.length
+    for (var i = 0; i< l; i++) {
+        note[i].index = i;
+    }
+
+    var index = note.map(function(d) { return d.index})
+    var margin = {top: 40, right: 10, bottom: 40, left: 30};
+    var w = window.innerWidth - margin.right - margin.left - 30;
+    var h = 500 - margin.top - margin.bottom;
+
+    var x = d3.scale.ordinal()
+            .domain(index)
+            .rangeBands([0,note.length * 25],0.08)
+
+    var y = d3.scale.linear()
+            .domain([0,d3.max(note,accesor)])
+            .range([h,0])
+
+    var svg = d3.select("body")
+            .append("svg")
+            .attr("class","chart")
+            .attr("width", w + margin.right + margin.left)
+            .attr("height", h + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform","translate("+margin.left + "," + margin.top + ")")
+
+    var z = d3.behavior.zoom().scaleExtent([1,1]).on("zoom", zoom)
+    svg.append("rect")
+            .attr("class","panning")
+            .attr("fill","white")
+            .attr("width",w)
+            .attr("height",h)
+            .attr("pointer-events","all")
+            .call(z)
+
+    var rect = svg.append("svg")
+            .attr("class","container")
+            .attr("viewbox","0 0 "+ w + " " + h)
+            .selectAll("rect")
+            .data(note,function(d) {return d.index})
+
+    var xAxis,yAxis
+
+    function makeAxis() {
+        xAxis = d3.svg.axis().scale(x)
+                .tickSize(1)
+                .tickPadding(6)
+                .orient("bottom")
+
+        svg.append("svg")
+                .attr("viewbox","0 0 "+ w + " " + h)
+                .attr("y",h)
+                .append("g")
+                    .attr("class","x axis")
+                    .call(xAxis)
+                    .selectAll(".tick.major text")
+                    .attr("transform","translate(-10,10) rotate(-60)")
+
+        var yAxis = d3.svg.axis().scale(y)
+                .tickSize(1)
+                .tickPadding(6)
+                .orient("left")
+
+        svg.append("g")
+                .attr("class","y axis")
+                .call(yAxis)
+    }
+
+    function setAxis() {
+        x.domain(index)
+                .rangeBands([0,note.length * 25],0.08)
+        xAxis.scale(x)
+        d3.select(".x.axis").transition()
+                .duration(750)
+                .call(xAxis)
+        d3.select(".x.axis").selectAll(".tick.major text").attr("transform","translate(-10,10) rotate(-60)")
+    }
+    function addData() {
+        var newElems = rect.enter().append("rect")
+                .attr("pointer-events","none")
+                .attr("x",function(d,i) { return x(i) })
+                .attr("width", x.rangeBand())
+                .attr("y",h)
+                .attr("height",0)
+        modify(newElems)
+    }
+
+    function removeData() {
+        rect.exit()
+                .transition()
+                    .attr("y",h)
+                    .attr("height",0)
+    }
+
+    sort = false;
+    d3.select("#sort").on("click",function() {
+        if (sort = !sort) {
+            index.sort(function(a,b) { console.log(a,note[a]);return accesor(note[a]) - accesor(note[b]) })
+        }
+        else {
+            index = note.map(function(d) { return d.index})
+        }
+
+        setAxis()
+
+        rect.transition()
+                .duration(750)
+                .delay(function(d,i) { return i *50})
+                .attr("x",function(d,i) {return x(i)})
+    })
+
+    d3.selectAll("#dim").on('change',function(){
+        var materie = this.value
+        accesor = function(d) { return d[materie]}
+        rect = rect.data(note,function(d) {return d.index})
+        modify(rect)
+    })
+
+    d3.select("#grupa").on('change',function() {
+        note = []
+        var options = this.options;
+        var opt;
+        for (var i=0, iLen=options.length; i<iLen; i++) {
+            opt = options[i];
+
+            if (opt.selected) {
+                note = note.concat(data[opt.value]);
+                console.log(note,data[opt.value])
+            }
+        }
+        index = d3.range(note.length)
+        setAxis()
+        rect = rect.data(note,function(d) {return d.index})
+        scrollTo(0)
+        removeData()
+        modify(rect)
+        addData()
+    })
+
+    function modify(elems) {
+        elems.transition()
+                .duration(1000)
+                .attr("height",function(d) { return h - y(accesor(d))} )
+                .attr("y",function(d) { return y(accesor(d))})
+                .attr("x",function(d,i) { return x(i) })
+                .style("fill",function(d) {
+                    if (accesor(d) == Math.ceil(d3.median(note,accesor)))
+                        return "#81642A"
+                    else if ( accesor(d) < 5)
+                        return "#d62728";
+                    else
+                        return "#2ca02c"
+                })
+    }
+    function zoom() {
+        var dx = d3.event.translate[0];
+
+        var max = d3.max(x.range()) - w + 40
+        if (max < 0) {
+            return
+        }
+        if (dx > 0) {
+            dx = 0
+        }
+        if (dx < -max) {
+            dx = -max
+        }
+        scrollTo(dx)
+    }
+
+    function scrollTo(dx) {
+        z.translate([ dx, 0])
+        rect.attr("transform", "translate(" + dx + ",0)")
+        svg.select(".x.axis").attr("transform", "translate(" + dx + ")")
+    }
+</script>
+<script>
+    addData()
+    makeAxis()
+</script>
+</body>
+</html>

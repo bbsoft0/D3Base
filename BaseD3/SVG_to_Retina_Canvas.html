@@ -1,0 +1,113 @@
+<html>
+<head>
+<style>
+/* Any styling on the SVG won't transfer to the Canvas */
+/* Styling must be done inline */
+</style>
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var margin = { top: 20, right: 20, bottom: 30, left: 40 },
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var x = d3.scaleBand()
+  .rangeRound([0, width])
+  .padding(0.1);
+
+var y = d3.scaleLinear()
+  .rangeRound([height, 0]);
+
+var svg = d3.select("body").append("svg")
+  .attr("xmlns", "http://www.w3.org/2000/svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom);
+
+var g = svg.append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var devicePixelRatio = window.devicePixelRatio || 1;
+
+var canvas = d3.select("body").append("canvas")
+  .attr("width", (width + margin.left + margin.right) * devicePixelRatio)
+  .attr("height", (height + margin.top + margin.bottom) * devicePixelRatio)
+  .style("width", width + "px")
+  .style("height", height + "px")
+  .style("margin-top", margin.top + "px")
+  .style("margin-left", margin.left + "px");
+
+var context = canvas.node().getContext("2d");
+context.scale(devicePixelRatio, devicePixelRatio);
+
+d3.tsv("data.tsv", processRow, function(error, data) {
+  if (error) throw error;
+
+  // Update scales
+  x.domain(data.map(function(d) { return d.letter; }));
+  y.domain([0, d3.max(data, function(d) { return d.frequency; })]);
+
+  // Draw axes
+  g.append("g")
+    .attr("class", "axis axis--x")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x))
+    .select("path")
+    .style("stroke", "none");
+
+  g.append("g")
+      .attr("class", "axis axis--y")
+      .call(d3.axisLeft(y).tickFormat(d3.format(".0%")))
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("dx", "-1em")
+      .attr("dy", "1.66em")
+      .style("fill", "#000")
+      .text("Frequency");
+
+  // Draw bars
+  g.append("g")
+      .attr("class", "bars")
+    .selectAll(".bar").data(data)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.letter); })
+      .attr("y", function(d) { return y(d.frequency); })
+      .attr("width", x.bandwidth())
+      .attr("height", function(d) { return height - y(d.frequency); })
+      .style("fill", "steelblue");
+
+  // Convert SVG to Canvas
+  // see: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Drawing_DOM_objects_into_a_canvas
+  var DOMURL = window.URL || window.webkitURL || window;
+
+  var svgString = domNodeToString(svg.node());
+
+  var image = new Image();
+  var svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+  var url = DOMURL.createObjectURL(svgBlob);
+
+  image.onload = function() {
+    context.drawImage(image, 0, 0);
+    DOMURL.revokeObjectURL(url);
+  }
+
+  image.src = url;
+});
+
+function processRow(d) {
+  d.frequency = +d.frequency;
+  return d;
+}
+
+// Get the string representation of a DOM node (removes the node)
+function domNodeToString(domNode) {
+  var element = document.createElement("div");
+  element.appendChild(domNode);
+  return element.innerHTML;
+}
+
+</script>
+</body>
+</html>

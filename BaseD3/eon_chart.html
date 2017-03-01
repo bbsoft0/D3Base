@@ -1,0 +1,65 @@
+<html>
+  <head>
+
+    <script type="text/javascript" src="http://pubnub.github.io/eon/v/eon/0.0.9/eon.js"></script>
+    <link type="text/css" rel="stylesheet" href="http://pubnub.github.io/eon/v/eon/0.0.9/eon.css" />
+
+    <style type="text/css">
+    .c3 svg {
+        font: 11px monospace;
+    }
+    </style>
+
+  </head>
+  <body>
+    <div id="chart"></div>
+    <script>
+
+      var pubnub = PUBNUB.init({
+        publish_key: 'pub-c-6dbe7bfd-6408-430a-add4-85cdfe856b47',
+        subscribe_key: 'sub-c-2a73818c-d2d3-11e3-9244-02ee2ddab7fe'
+      });
+
+      var channel = 'c3-gauge'  + Math.random();
+
+      eon.chart({
+        pubnub: pubnub,
+        channel: channel,
+        generate: {
+          bindto: '#chart',
+          data: {
+            type: 'gauge'
+          },
+          gauge: {
+            min: 0,
+            max: 100,
+            width: 36
+          },
+          color: {
+            pattern: ['#7AC143', '#FDBB30', '#EC008C', '#EE3124'],
+            threshold: {
+              values: [25, 50, 75, 100]
+            }
+          },
+          size: {
+              height: 400
+          }
+        }
+      });
+    </script>
+    <script>
+      setInterval(function(){
+
+        pubnub.publish({
+          channel: channel,
+          message: {
+            eon: {
+              'E E S U R': Math.floor(Math.random() * 99)
+            }
+          }
+        });
+
+      }, 2000);
+    </script>
+  </body>
+</html>

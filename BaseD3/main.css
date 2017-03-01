@@ -1,0 +1,68 @@
+@import url(http://fonts.googleapis.com/css?family=Source+Code+Pro:400,600);
+
+body {
+    font-family: "Source Code Pro", Consolas, monaco, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 400;
+    background-color:  #130C0E;
+    color: #FDBB30;
+    width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+p {
+    color: #EC008C;
+    max-width: 400px;
+    margin-bottom: 60px;
+}
+h1, h3 {
+    font-size: 18px;
+    font-weight: normal;
+}
+#questions {
+    margin-bottom: 30px;
+}
+button.ny-btn {
+    font-family: "Source Code Pro", Consolas, monaco, monospace;
+    font-size: 16px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-align: center;
+    text-decoration: none;
+    color:  #130C0E; /* black */
+    font-weight: 400;
+    width: 60px;
+    border: none;
+    padding: 4px 8px;
+    display: inline-block;
+    margin-right: 2px;
+    font-weight: 600;
+}
+button.ny-btn:focus {
+    outline:0;
+}
+#eisenhower {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-flow: row wrap;
+  justify-content: space-around;
+}
+.eh-item {
+  background: #7AC143;
+  padding: 5px;
+  width: 48%;
+  height: 150px;
+  margin-top: 2px;
+  line-height: 150px;
+  color: #130C0E;
+  font-size: 36px;
+  text-align: center;
+  opacity: 0.1;
+}

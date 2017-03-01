@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<meta charset='utf-8'>
+<link rel="stylesheet" href="main.css">
+<body>
+<header id="questions">
+    <p>What is important is seldom urgent and what is urgent is seldom important.
+     &mdash;Dwight Eisenhower</p>
+
+    <h1>Is your task: </h1>
+    <h3>
+        important? <span id="q1"></span>
+        &amp; urgent? <span id="q2"></span>
+    </h3>
+</header>
+
+
+<ul id='eisenhower'>
+    <li class="eh-item" id="eh-1">Just do it</li>
+    <li class="eh-item" id="eh-2">Trello it</li>
+    <li class="eh-item" id="eh-3">Delegate it</li>
+    <li class="eh-item" id="eh-4">Drop it</li>
+</ul>
+
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="d3_code_toggle_yn.js" charset="utf-8"></script>
+
+<script>
+(function() {
+    // track state of both questions: true/false
+    var important = null,
+        urgent = null;
+
+    // render no/yes buttons
+    var q1 = noYesBtns('#q1')
+        .nBg('#FDBB30')
+        .yBg('#FDBB30')
+        .on('_click', function () {
+
+            if (this.firstChild.data == 'yes') {
+                important = true;
+            } else {
+                important = false;
+            }
+            // apply decision
+            decision();
+        })
+        .render();
+
+    var q2 = noYesBtns('#q2')
+        .nBg('#FDBB30')
+        .yBg('#FDBB30')
+        .on('_click', function () {
+
+            if (this.firstChild.data === 'yes') {
+                urgent = true;
+            } else {
+                urgent = false;
+            }
+
+            decision();
+        })
+        .render();
+
+    function decision() {
+        // deal with only uncompleted questions (one value)
+        if (important && urgent === null || important === null && !urgent) {
+            highlight('#eh-2', 0.4);
+        } else if (!important && urgent === null || important === null && urgent) {
+            highlight('#eh-3', 0.4);
+        } // both questions have values
+          else if (important && urgent) {
+            // Urgent and important (tasks you will do immediately)
+            highlight('#eh-1', 1);
+        } else if (!important && urgent) {
+            // Urgent, but not important (tasks you will delegate to someone else)
+            highlight('#eh-3', 1);
+        } else if (important && !urgent) {
+            // Important, but not urgent (tasks you will schedule to do later)
+            highlight('#eh-2', 1);
+        } else if (!important && !urgent) {
+            // Neither urgent nor important (tasks that you will eliminate)
+            highlight('#eh-4', 1);
+        }
+    }
+
+    function highlight(id, alpha) {
+        d3.selectAll('.eh-item').style('opacity', 0.1);
+        d3.select(id).transition().style('opacity', alpha);
+    }
+
+}());
+
+// just for blocks viewer size
+d3.select(self.frameElement).style('height', '700px');
+
+</script>
+</body>

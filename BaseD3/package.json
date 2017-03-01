@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "build": "d3-bundler -- d3.js | uglifyjs -c -m -o d3.min.js"
+  },
+  "dependencies": {
+    "uglify-js": "2"
+  },
+  "devDependencies": {
+    "d3-bundler": "~0.2.5",
+    "d3-color": "~0.1.0"
+  }
+}
