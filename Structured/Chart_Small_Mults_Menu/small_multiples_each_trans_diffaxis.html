@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- CSS style for table filters based on Nathan Yau's in his tutorial for How American's Spend Their Days -->
+
+
+<style>
+
+body{
+  font:10px Helvectica,Arial,sans-serif;
+}
+
+a{
+  color:#821122;
+}
+
+#header{
+  border-bottom:1px solid #ccc;
+  margin:20px 26px 20px 20px;
+}
+#header h1{
+  font-size:2.4em;
+  font-family:Georgia,Palatino,serif;
+  font-weight:normal;
+}
+#header p{
+  font-family:Georgia,Palatino,serif;
+  font-size:1.3em;
+  line-height:1.4em;}
+
+#explain {
+  margin: 0 0 0 20px;
+}
+
+#explain h3{
+  font-size:1.5em;
+  margin:0 0 0.5em 0;
+  padding:0;
+}
+
+#explain p{
+  font-size:1.2em;
+  line-height:1.4em;
+  color:#717171;
+  margin-top:0;
+}
+
+#filters{
+  margin:0 24px 10px 16px;
+  float:right;
+}
+
+.area{
+  fill:#e2e2e2;
+  stroke: #888;
+  stroke-width: 0.5px;
+}
+
+.line {
+  fill:none;
+  stroke:steelblue;
+  stroke-width:1.5px;
+}
+
+.endpoint {
+  fill: steelblue;
+}
+
+#filters table{
+  border-collapse:collapse;
+  border-top:1px solid #ccc;
+}
+
+#filters table td{
+  padding:0;margin:0;
+}
+
+#filters a{
+  display:block;
+  padding:2px 4px;
+  font-size:1.1em;
+  color:#919292;
+  background:#F0F4F5;
+  cursor:pointer;
+  border-left:1px solid #CCCCCC;
+  border-bottom:1px solid #CCCCCC;
+  border-right:1px solid #CCCCCC;
+  overflow:hidden;
+}
+
+#filters a:hover{
+  text-decoration:underline;
+}
+#filters a.current{
+  background:#fff;color:#000;
+  font-weight:bold;
+}
+#filters a.current:hover{
+  text-decoration:none;
+}
+
+.left{
+  float:left;
+}
+
+.clr{
+  clear:both;
+}
+
+.label {
+  fill: black;
+  font-size: 1.1em;
+}
+
+
+.y.axis text, .axislabel {
+  font-size: .85em;
+  fill: #888;
+}
+
+</style>
+
+<body>
+
+<div id="header">
+  <h2>Relative Progress on Illnesses in Selected African Countries, 2000-2013</h2>
+
+  <p>Source: WHO. Scale differs across countries for each illness.</p>
+
+</div>
+
+<div id="explain" class="left">
+<h3>Total</h3>
+<p>Text about the total illnesses by country here.</p>
+</div>
+
+<div id="filters">
+  <table class="left">
+    <tr>
+      <td><a id="Total" class="current">Totals</a></td>
+    </tr>
+    <tr>
+      <td><a id="Measles">Measles</a></td>
+    </tr>
+    <tr>
+      <td><a  id="Respiratory_infections">Respiratory Infections</a></td>
+    </tr>
+    <tr>
+      <td><a id="Pertussis">Pertussis</a></td>
+    </tr>
+    <tr>
+      <td><a id="Diarrhoeal_diseases">Diarrhoea and Related Diseases</a></td>
+    </tr>
+    </table>
+
+    <table class="left">
+    <tr>
+      <td><a  id="Sepsis">Sepsis</a></td>
+    </tr>
+    <tr>
+      <td><a  id="HIV_Aids">HIV and AIDS</a></td>
+    </tr>
+    <tr>
+      <td><a id="Malaria">Malaria</a></td>
+    </tr>
+    <tr>
+      <td><a id="Asphyxia_trauma">Asphyxia Trauma</a></td>
+    </tr>
+    <tr>
+      <td><a id="Meningitis_encephalitis">Meningtitis and Encephalitis</a></td>
+    </tr>
+  </table>
+
+</div>
+  <div class="clr"></div>
+
+<div id="vis"></div>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<script>
+
+var explain = {
+    "Total": "Rwanda and Botswana made significant rates of progress. Angola not so much.",
+    "Measles":"Despite occasional outbreaks, all countries have made progress. The Democractic Republic of the Congo still suffers badly.",
+    "Malaria": "Malaria has been reduced across most countries, with the exception of the Central African Republic.",
+    "Asphyxia_trauma" : "Asphyxia and related trauma are still on the rise or relatively unchanged in many countries.",
+    "Meningitis_encephalitis": "All countries show improvement in deaths from meningitis and encephalitis, but C.A.R. shows a slight increase.",
+    "HIV_Aids": "HIV and Aids have been reduced generally, but may be on the increase in Angola and Nigeria.",
+    "Sepsis": "Sepsis increased or remained almost flat in most countries except Rwanda.",
+    "Diarrhoeal_diseases": "Presumably with access to better water, the diarrhoael diseases have been reduced across these countries.",
+    "Respiratory_infections": "Little signficant improvement in progress.",
+    "Pertussis": "Pertussis appears to be on the increase in many countries."
+};
+
+var countries = [];
+
+var margin = {top: 30, right: 15, bottom: 20, left: 45},
+    width = 250 - margin.left - margin.right,
+    height = 100 - margin.top - margin.bottom;
+
+var parseDate = d3.time.format("Year %Y").parse;
+var outputDate = d3.time.format("%Y");
+
+var x = d3.time.scale()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var yAxis = d3.svg.axis()
+      .orient("left")
+      .ticks(2)
+      .outerTickSize(0)
+      .innerTickSize(0)
+      .tickFormat(d3.format("s"));
+
+var current = "Total";
+
+var area = d3.svg.area()
+    .x(function(d) { return x(d.date); })
+    .y0(height)
+    .y1(function(d) { return y(d[current]); });
+
+var line = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d[current]); });
+
+d3.select("#explain h3").text(current);
+d3.select("#explain p").html(explain[current]);
+
+d3.csv("data/deaths_04yearsold_excerpt.csv", typeFix, function(error, data) {
+
+  //typeFix is a function that parses the dates and sets the strings to numeric. See below!
+  console.log("data after load", data);
+
+  // Nest data by symbol.
+  countries = d3.nest()
+      .key(function(d) { return d.Country; })
+      .sortKeys(d3.ascending)
+      .sortValues(function(a,b) {return a.date - b.date;})
+      .entries(data);
+
+  // Compute the minimum and maximum date across symbols.
+  // We assume values are sorted by date.
+  x.domain([
+    d3.min(countries, function(s) { return s.values[0].date; }),
+    d3.max(countries, function(s) { return s.values[s.values.length - 1].date; })
+  ]);
+
+  // Add an SVG element for each country, with the desired dimensions and margin.
+  var svg = d3.select("#vis").selectAll("svg")
+      .data(countries)
+    .enter().append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+      .each(multiple); // uses each to call the multiple code for each country
+
+  function multiple(country) {
+
+    var localsvg = d3.select(this);
+
+    // domain set per chart in this example:
+    y.domain([0, d3.max(country.values, function(v) { return +v[current];})
+      ]);
+    yAxis.scale(y);
+
+    // Add the area path elements. Note: the y-domain is set per element.
+    localsvg.append("path")
+        .attr("class", "area")
+        .attr("d", function(d) { return area(d.values); });
+
+    // Add the line path elements. Note: the y-domain is set per element.
+    localsvg.append("path")
+        .attr("class", "line")
+        .attr("d", function(d) { return line(d.values); });
+
+     localsvg.append("text")
+      .attr("class", "axislabel")
+      .attr("x", 0)
+      .attr("y", height + margin.bottom/2)
+      .style("text-anchor", "start")
+      .text(function(d) { return outputDate(d.values[0].date); });
+
+    // Add a small label for the symbol name.
+
+    localsvg.append("text")
+      .attr("class", "label")
+      .attr("x", width/2)
+      .attr("y", -8)
+      .style("text-anchor", "middle")
+      .text(function(d) { return d.key; });
+
+    localsvg.append("text")
+      .attr("class", "axislabel")
+      .attr("x", width)
+      .attr("y", height + margin.bottom/2)
+      .style("text-anchor", "end")
+      .text(function(d) { return outputDate(d.values[d.values.length - 1].date);});
+
+      // put a dot on last point
+    localsvg.append("circle")
+      .attr("class", "endpoint")
+      .attr("cx", function(d) {return x(d.values[d.values.length - 1].date);})
+      .attr("cy", function(d) {return y(d.values[d.values.length - 1][current]);})
+      .attr("r", 2);
+
+      // label the value on the last point
+    localsvg.append("text")
+     .attr("class", "endpoint")
+      .attr("x", width)
+      .attr("y", function(d) {return y(d.values[d.values.length - 1][current]);})
+      .attr("dy", -5)
+      .style("text-anchor", "end")
+      .text(function(d) { return d.values[d.values.length - 1][current]; });
+
+    localsvg.append("g").attr("class", "y axis").call(yAxis);
+
+  } // end multiple
+
+  // ui click stuff
+  d3.selectAll("#filters a").on("click", function() {
+      d3.selectAll("#filters a").classed("current", false);
+      d3.select(this).classed("current", true);
+
+      var label = d3.select(this).attr("text");
+      var selection = d3.select(this).attr("id");
+      current = selection;
+
+      d3.select("#explain h3").text(current);
+      d3.select("#explain p").html(explain[current]);
+
+      transition(current);
+  });
+
+  function transition(current) {
+
+      // current is the clicked on button's id, so the illness.
+
+    console.log("in trans", y.domain());
+
+    // svg is each of the charts, with country as the data - from when we created them.
+
+    svg.each(function(country) {
+
+      y.domain([0, d3.max(country.values, function(v) { return +v[current];})]
+      );
+      yAxis.scale(y);
+      var chartTrans = d3.select(this).transition();
+      chartTrans.select(".y.axis").call(yAxis);
+      chartTrans.select("path.area")
+        .attr("d", function(d) { return area(d.values); });
+      chartTrans.select("path.line")
+      .attr("d", function(d) { return line(d.values); });
+
+      chartTrans.select("circle.endpoint")
+      .attr("cy", function(d) {return y(d.values[d.values.length - 1][current]);});
+
+        // label the value on the last point
+      chartTrans.select("text.endpoint")
+        .attr("y", function(d) {return y(d.values[d.values.length - 1][current]);})
+        .text(function(d) { return d.values[d.values.length - 1][current]; });
+      }); // end each
+  } // end transition
+
+});
+
+// this function is applied to all the data values on load!
+
+function typeFix(d) {
+  d.Meningitis_encephalitis = +d.Meningitis_encephalitis;
+  d.Respiratory_infections = +d.Respiratory_infections;
+  d.Sepsis = +d.Sepsis;
+  d.Pertussis = +d.Pertussis;
+  d.HIV_Aids = +d.HIV_Aids;
+  d.Diarrhoeal_diseases = +d.Diarrhoeal_diseases;
+  d.Asphyxia_trauma = +d.Asphyxia_trauma;
+  d.Malaria = +d.Malaria;
+  d.Measles = +d.Measles;
+  d.date = parseDate(d.Year);
+  return d;
+}
+
+</script>

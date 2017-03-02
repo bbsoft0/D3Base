@@ -10,7 +10,6 @@
 <script>
 var canvas = document.getElementById("painting");
 var ctx = canvas.getContext("2d");
-
 d3.range(0, canvas.width).forEach(function(x) {
   d3.range(0, canvas.height).forEach(function(y) {
     ctx.fillStyle = d3.lab(65, -100+200*x/canvas.width, -100+200*y/canvas.height);

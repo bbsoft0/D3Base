@@ -1,0 +1,188 @@
+<html>
+<head>
+	<script type="text/javascript" src="d3.min.js"></script>
+	<title>Hello World</title>
+</head>
+
+
+<body>
+	<p>Hello!</p>
+
+	<svg width="50" height="50">	<!-- Rectangle -->
+	  <rect x="0" y="0" width="50" height="50" fill="green" />
+	</svg>
+	<svg width="50" height="50">	<!-- Circle -->
+  		<circle cx="25" cy="25" r="25" fill="purple" />
+	</svg>
+	<svg width="50" height="50">	<!-- Ellipse -->
+		<ellipse cx="25" cy="25" rx="15" ry="10" fill="red" />
+	</svg>
+	<svg width="50" height="50">	<!-- Simple Line -->
+  		<line x1="5" y1="5" x2="40" y2="40" stroke="gray" stroke-width="5"  />
+	</svg>
+	<svg width="50" height="50">	<!-- Polyline -->
+ 		<polyline fill="none" stroke="blue" stroke-width="2"
+     	points="05,30
+             	15,30
+             	15,20
+             	25,20
+             	25,10
+             	35,10" />
+ 	</svg>
+	<svg width="50" height="50">	<!-- Polygon -->
+  		<polygon fill="yellow" stroke="blue" stroke-width="2"
+    	points="05,30
+            15,10
+            25,30" />
+	</svg>
+
+<br>
+================================ [SVG] ===================>
+<script>
+	circleRadii = [40, 20, 10]
+
+	var svgContainer = d3.select("body").append("svg")
+	                                    .attr("width", 600)
+	                                    .attr("height", 100);
+
+	var circles = svgContainer.selectAll("circle")
+	                          .data(circleRadii)
+	                          .enter()
+	                          .append("circle")
+
+	var circleAttributes = circles
+	                       .attr("cx", 50)
+	                       .attr("cy", 50)
+	                       .attr("r", function (d) { return d; })
+	                       .style("fill", function(d) {
+	                         var returnColor;
+	                         if (d === 40) { returnColor = "green";
+	                         } else if (d === 20) { returnColor = "purple";
+	                         } else if (d === 10) { returnColor = "red"; }
+	                         return returnColor;
+	                       });
+</script>
+
+<br>
+================================ [spaceCircles] ===================>
+<script>
+	var spaceCircles = [30, 70, 110];
+
+	var svgContainer = d3.select("body").append("svg")
+	                                    .attr("width", 200)
+	                                    .attr("height", 200);
+
+	var circles = svgContainer.selectAll("circle")
+	                          .data(spaceCircles)
+	                          .enter()
+	                          .append("circle")
+
+	var circleAttributes = circles
+	                       .attr("cx", function (d) {return d; })
+	                       .attr("cy", function (d) {return d; })
+	                       .attr("r", 20)
+	                       .style("fill", function(d) {
+	                         var returnColor;
+	                         if (d === 30) { returnColor = "green";
+	                         } else if (d === 70) { returnColor = "purple";
+	                         } else if (d === 110) { returnColor = "red"; }
+	                         return returnColor;
+	                       });
+</script>
+
+<div id= "space2" align="center"></div>
+</div>
+
+<br>
+================================ [spaceCircles Cleanup] ===================>
+<script>
+	var jsonCircles = [
+  	{ "x_axis": 30, "y_axis": 30, "radius": 20, "color" : "green" },
+  	{ "x_axis": 70, "y_axis": 70, "radius": 20, "color" : "purple"},
+  	{ "x_axis": 110, "y_axis": 100, "radius": 20, "color" : "red"}];
+
+	var svgContainer = d3.select("#space2").append("svg")
+	                                    .attr("width", 200)
+	                                    .attr("height", 200);
+
+
+	var circles = svgContainer.selectAll("circle")
+	                          .data(jsonCircles)
+	                          .enter()
+	                          .append("circle")
+
+	var circleAttributes = circles
+	                       .attr("cx", function (d) {return d.x_axis; })
+	                       .attr("cy", function (d) {return d.y_axis; })
+	                       .attr("r",  function (d) {return d.radius; })
+	                       .style("fill", function (d) {return d.color; });
+</script>
+
+
+<br>
+================================ [Rectangles, MaxX, MaxY] ===================>
+<script>
+var jsonRectangles = [
+  { "x_axis": 10, "y_axis": 10, "height": 20, "width":20, "color" : "green" },
+  { "x_axis": 160, "y_axis": 40, "height": 20, "width":20, "color" : "purple" },
+  { "x_axis": 70, "y_axis": 70, "height": 20, "width":20, "color" : "red" }];
+
+var max_x = 0;
+var max_y = 0;
+
+for (var i = 0; i < jsonRectangles.length; i++) {
+  var temp_x, temp_y;
+  var temp_x = jsonRectangles[i].x_axis + jsonRectangles[i].width;
+  var temp_y = jsonRectangles[i].y_axis + jsonRectangles[i].height;
+
+  if ( temp_x >= max_x ) { max_x = temp_x; }
+
+  if ( temp_y >= max_y ) { max_y = temp_y; }
+}
+
+var svgContainer = d3.select("body").append("svg")
+                                    .attr("width", max_x)
+                                    .attr("height", max_y)
+
+var rectangles = svgContainer.selectAll("rect")
+                             .data(jsonRectangles)
+                             .enter()
+                             .append("rect");
+
+var rectangleAttributes = rectangles
+                          .attr("x", function (d) { return d.x_axis; })
+                          .attr("y", function (d) { return d.y_axis; })
+                          .attr("height", function (d) { return d.height; })
+                          .attr("width", function (d) { return d.width; })
+                          .style("fill", function(d) { return d.color; });
+</script>
+
+
+<br>
+================================ [Axis] ===================>
+<script>
+	//Create the SVG Viewport
+	var svgContainer = d3.select("body").append("svg")
+	                                     .attr("width", 400)
+	                                     .attr("height", 100);
+
+	//Create the Scale we will use for the Axis
+	var axisScale = d3.scale.linear().domain([0, 100])
+	                         .range([0, 400]);
+
+	//Create the Axis
+	var xAxis = d3.svg.axis()
+	                   .scale(axisScale);
+
+
+	//Create an SVG group Element for the Axis elements and call the xAxis function
+	var xAxisGroup = svgContainer.append("g")
+	                              .call(xAxis);
+</script>
+
+
+</body>
+
+
+</html>
+
