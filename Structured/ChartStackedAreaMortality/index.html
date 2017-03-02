@@ -1,0 +1,69 @@
+<!-- This page is an example visualization of Cause of Death data
+     from the Centers for Disease Control.
+
+     Details of the data can be found here:
+     https://github.com/curran/data/tree/gh-pages/cdc/mortality
+
+     The visualization draws from this D3 example:
+     http://bl.ocks.org/mbostock/3885211
+
+     Curran Kelleher
+     2/13/2014
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8 />
+    <title>Causes of Death</title>
+    <script src="http://d3js.org/d3.v3.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js"></script>
+    <style>
+      body {
+        font: 12px sans-serif;
+      }
+      .title {
+        text-anchor: middle;
+        font-size: 2em;
+      }
+
+      /* Begin style for stacked area visualization. */
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+      /* End style for stacked area visualization. */
+
+      /* Begin style for tree visualization. */
+      .node circle {
+        stroke: #000;
+        stroke-width: 1.5px;
+      }
+
+      .node .with-children {
+        fill: #000;
+      }
+
+      .node .without-children {
+        fill: #FFF;
+      }
+
+      .node {
+        font: 12px sans-serif;
+      }
+
+      .link {
+        fill: none;
+        stroke: #ccc;
+        stroke-width: 1.5px;
+      }
+
+      /* End style for tree visualization. */
+
+    </style>
+  </head>
+  <body>
+    <script data-main="data/main" src="http://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+  </body>
+</html>
