@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!-- Modified version of Scott Murray's Line Chart from Knight d3 -->
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Line Chart</title>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+		<style type="text/css">
+			body {
+				background-color: white;
+				font-family: Helvetica, Arial, sans-serif;
+			}
+			h1 {
+				font-size: 24px;
+				margin: 0;
+			}
+			p {
+				font-size: 14px;
+				margin: 10px 0 0 0;
+			}
+			svg {
+				background-color: white;
+			}
+			.axis path,
+			.axis line {
+				fill: none;
+				stroke: black;
+				shape-rendering: crispEdges;
+			}
+			.label {
+				font-size: 10pt;
+				fill: steelblue;
+			}
+			.axis text {
+				font-family: sans-serif;
+				fill: black;
+				font-size: 11px;
+			}
+		</style>
+	</head>
+	<body>
+
+		<h1>United States CO2 Emissions</h1>
+
+		<p>The United States&rsquo; carbon dioxide emissions, 1961-2010. Source: <a href="http://data.worldbank.org/indicator/EN.ATM.CO2E.KT?page=6">World Bank</a>, 2014</p>
+
+		<script type="text/javascript">
+			var fullwidth = 700;
+			var fullheight = 600;
+			var margin = { top: 20, right: 60, bottom: 50, left: 100};
+			var width = fullwidth - margin.left - margin.right;
+			var height = fullheight - margin.top - margin.bottom;
+			//Set up date formatting and years
+			var dateFormat = d3.time.format("%Y");
+			var xScale = d3.time.scale()
+								.range([ 0, width]);
+			var yScale = d3.scale.linear()
+								.range([0, height]);
+			var xAxis = d3.svg.axis()
+							.scale(xScale)
+							.orient("bottom")
+							.ticks(15)
+							.tickFormat(function(d) {
+								return dateFormat(d);
+							});
+			var yAxis = d3.svg.axis()
+							.scale(yScale)
+							.orient("left");
+			var line = d3.svg.line()
+				.x(function(d) {
+					return xScale(dateFormat.parse(d.year));
+				})
+				.y(function(d) {
+					return yScale(d.emissions);
+				});
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", fullwidth)
+						.attr("height", fullheight)
+						.append("g")
+						.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			d3.csv("data/usa_co2_emissions.csv", function(myData) {
+				// get the min and max of the years in the data, after parsing as dates!
+				xScale.domain(d3.extent(myData, function(d){
+						return dateFormat.parse(d.year);
+						})
+				);
+				// the domain is from the max of the emissions to 0 - remember it's reversed.
+				yScale.domain([ d3.max(myData, function(d) {
+						return +d.emissions;
+					}),
+					0
+				]);
+				console.log("my data", myData);
+				svg.datum(myData)
+					.append("path")
+					.attr("class", "line usa")
+					.attr("d", line)  // line is a function that will operate on the data array, with x and y.
+					.attr("fill", "none")
+					.attr("stroke", "steelblue")
+					.attr("stroke-width", 2);
+				// add a simple label by last point - use scales:
+				// in this case, we don't need the data attached,
+				// because we can just specify the values in the
+				// last item:
+				var lastItem = myData[myData.length - 1];
+				svg.append("text")
+					.attr("x", xScale(dateFormat.parse(lastItem.year)))
+					.attr("y", yScale(+lastItem.emissions))
+					.attr("class", "label")
+					.text(d3.format(".0f")(lastItem.emissions)); // round it
+				svg.append("g")
+					.attr("class", "y axis")
+					.call(yAxis);
+				svg.append("g")
+					.attr("class", "x axis")
+					.attr("transform", "translate(0," + height + ")")
+					.call(xAxis);
+			});
+		</script>
+
+	</body>
+</html>
