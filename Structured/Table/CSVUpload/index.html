@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>D3 CSV Upload</title>
+<style>
+body { font-family: Ubuntu, Helvetica, sans-serif; font-size: 12px; }
+table { font-size: 10px; border-collapse: collapse; }
+table th { border: 1px solid #aaa; }
+table td { border: 1px solid #d0d0d0; }
+.number { color: #09c; }
+.mixed { color: #c90; }
+.string { color: #90c; }
+.time { color: #2c0; }
+.boolean { color: #0b6; }
+</style>
+</head>
+<body>
+<p>
+  Try uploading a CSV file, such as <a href="cars.csv">cars.csv</a> or <a href="earthquakes.csv">earthquakes.csv</a><br/>
+  This page uses <a href="https://developer.mozilla.org/en-US/docs/DOM/FileReader">FileReader</a>
+  and <a href="http://d3js.org/">d3</a> to render the table.
+</p>
+<input type="file" id="uploader">
+<p id="stats">
+</p>
+<table id="table">
+
+</table>
+<script src="http://d3js.org/d3.v2.js"></script>
+<script src="main.js"></script>
+<script>
+upload_button("uploader", load_dataset);
+</script>
+</body>
+</html>

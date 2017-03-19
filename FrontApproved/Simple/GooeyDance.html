@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Gooey Effect</title>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<div class="chart"></div>
+<script>
+
+//////////////////
+//// Initiate ////
+//////////////////
+
+var width = 960,
+    height = 500,
+    radius = 45;
+
+var theta = Math.PI/3,
+    spacing = 20;
+
+// color from http://colrd.com/palette/24070/
+var colors = ["#26294a", "#01545a", "#017351", "#03c383", "#aad962",
+   "#fbbf45", "#ef6a32", "#ed0345", "#a12a5e", "#710162"];
+var colorScale = d3.scale.ordinal().range(colors);
+
+var svg = d3.select(".chart").append("svg")
+  .attr("width", width)
+  .attr("height", height)
+  .append("g")
+  .style("filter", "url(#gooey)") //Set the filter on the container svg
+  .attr("transform", "translate(" + (width/2) + "," +(height/2) + ")");
+
+//SVG filter for the gooey effect
+//Code taken from http://tympanus.net/codrops/2015/03/10/creative-gooey-effects/
+var defs = svg.append('defs');
+var filter = defs.append('filter').attr('id','gooey');
+filter.append('feGaussianBlur')
+  .attr('in','SourceGraphic')
+  .attr('stdDeviation','8')
+  .attr('result','blur');
+filter.append('feColorMatrix')
+  .attr('in','blur')
+  .attr('mode','matrix')
+  .attr('values','1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7');
+
+var steps = 30;	
+svg.selectAll(".flyCircle")
+  .data(d3.range(steps).map(function(num) {return (num/steps)*(2*Math.PI); }))
+  .enter().append("circle")
+    .attr("class", "flyCircle")
+    .attr("cx", function(d,i) { return 45*Math.cos(i/Math.PI); })
+    .attr("cy", function(d,i) { return 45*Math.sin(i/Math.PI); })
+    .attr("transform", function(d,i) {
+      var radius = spacing * Math.sqrt(i),
+          angle = i * theta;
+      return "translate(" + (radius * Math.cos(angle)) + "," + (radius * Math.sin(angle)) + ")"
+    })
+    .attr("r", function(d,i) { return 8 + i/20; })
+    .style("fill", function(d,i) {return colorScale(i)})
+
+d3.timer(function(t) {
+  theta = theta - 0.0005;
+  svg.selectAll(".flyCircle")
+    .attr("transform", function(d,i) {
+       var radius = spacing * Math.sqrt(i),
+           angle = i * theta;
+       return "translate(" + (radius * Math.cos(angle)) + "," + (radius * Math.sin(angle)) + ")"
+    })     
+});
+
+</script>

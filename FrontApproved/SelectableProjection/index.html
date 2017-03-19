@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Selectable Projection Demo</title>
+    <script src='http://mbostock.github.com/d3/d3.v2.js'></script>
+    <script src='http://code.jquery.com/jquery-1.7.1.min.js'></script>
+    <script src='demo.js'></script>
+
+    <link rel="stylesheet" type="text/css" href="demo.css" />
+  </head>
+
+  <body>
+    <ul>
+    <h2><span id='account-name'></span></h2>
+    <h1>Selectable Projection</h1>
+    <p>
+      Map projections are transformations between one shape to another,
+      often a 2D surface such as a screen or printout.
+      A selectable pair of projections is shown below,
+      along with a mapping of points -
+      every 10 degrees latitude and longitude - between the two.
+    </p><p>
+      This demo is made with <a href='http://mbostock.github.com/d3/'>D3</a>,
+      Mike Bostock's DOM-based visualization framework.
+      It was adapted, via <a href='http://bl.ocks.org/2005817'
+                     >Albers to Orthographic Projection</a>,
+      from <a href='http://bl.ocks.org/1653763'
+             >Mercator to Orthographic Projection</a>.
+    </p>
+
+    <select id='proj'>
+      <option value='albers'  >Albers</option>
+      <option value='mercator'>Mercator</option>
+      <option value='stereo'  >Stereo</option>
+    </select>
+    <p/>
+    <div id='chart'></div>
+  </ul>
+  </body>
+</html>

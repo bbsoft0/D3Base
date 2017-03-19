@@ -1,0 +1,33 @@
+/* demo.css */
+
+body {
+  margin:         5px auto;
+}
+
+#chart svg {
+  border:         solid 1px #ccc;
+}
+
+h1 {
+  font:           20px/20px "Helvetica Neue";
+  margin:         0;
+}
+
+p {
+  color:          #333;
+  font:           12px/15px "Helvetica Neue";
+}
+
+circle.left {
+  fill:           #005982;
+}
+
+circle.right {
+  fill:           #971c20;
+}
+
+path.connect {
+  fill:           none;
+  stroke-width:   0.2;
+  stroke:         #aaa;
+}
