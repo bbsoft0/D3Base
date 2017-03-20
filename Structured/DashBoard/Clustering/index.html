@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		<title>Block Color Clustering</title>
+		
+		<script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
+		<script type="text/javascript" src="http://d3js.org/d3.hexbin.v0.min.js"></script>	
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.js"></script>
+
+		<!-- jQuery -->
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+		
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans:700,400,300' rel='stylesheet' type='text/css'>
+		<link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
+		<link href='https://fonts.googleapis.com/css?family=Lora' rel='stylesheet' type='text/css'>
+		<style>
+			body {
+				text-align: center;
+			}
+			
+			.header {
+				font-family: 'Montserrat', sans-serif;
+				margin-top: 20px;
+				font-size: 34px; 
+				text-align: left;
+				color: #525252;
+			}
+			
+			.subtext {
+				font-family: 'Lora', serif;
+				margin-top: 10px;
+				margin-bottom: 20px;
+				color: #AAAAAA; 
+				font-size: 12px;
+				text-align: left;
+			}
+			
+			#chart {
+				margin-top: 20px;
+				margin-bottom: 10px;
+			}
+			
+			.titleExplanation {
+				font-family: 'Montserrat', sans-serif;
+				font-size: 14px; 
+				text-align: left;
+				color: #525252;
+			}
+			
+			.explanation {
+				font-family: 'Lora', serif;
+				margin-top: 10px;
+				margin-bottom: 30px;
+				color: #AAAAAA; 
+				font-size: 12px;
+				text-align: left;
+			}
+			
+			.popover{
+				font-family: 'Montserrat', sans-serif;
+				font-size: 12px;
+				font-weight: 400;
+				color: #525252;
+				text-align: center;
+			}
+			
+			.btn, .checkbox label {
+				font-family: 'Montserrat', sans-serif;
+				color: #525252;
+			}
+		</style>
+	</head>
+	<body>
+	
+	<div id="cont" class="container-fluid">
+		
+		<div class="row">
+			<div class="col-sm-10 col-sm-offset-1">
+				<div class="header">
+					A clustering of all colors used in Blocks
+				</div>
+			</div>
+		</div>
+		
+		<div class="row">
+			<div class="col-sm-10 col-sm-offset-1">
+				<div class="subtext">
+					<p>What happens if you take all color statements from > 5000 blocks and run these through a Self-Organizing Map clustering that squishes it all down into 600 hexagons on a 2D plane?
+					Well, you can see the result below. Each hexagons displays the "average" hex value and its size of is scaled to the number of (the 66500) colors that are grouped in each hexagon. 
+					The biggest one, pure black, #000000, has 2700 entries.</p>
+				</div>
+			</div>	
+		</div>
+		
+		<div class="row">
+			<div class="col-sm-12">
+				<div id="chart"></div>				
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-m-3 col-m-offset-2" style="margin-top: 20px;">
+				<div id="button" class="btn-group" data-toggle="buttons">
+					<label id="diffSizeButton" class="btn btn-default active"><input type="radio" class="btn-options"> Sized hexagons </label>
+					<label id="sameSizeButton" class="btn btn-default"><input type="radio" class="btn-options"> Unsized hexagons </label>
+				</div>
+			</div>
+			
+			<div class="col-m-5" style="margin-top: 20px;">
+				<div class="checkbox">
+					<label>
+					  <input type="checkbox" id="highlightD3" value="showD3" checked> Highlight the <span style="color: #111111;">d3.scale.category..</span> colors & <span style="color: #F70282;">steelblue</span>
+					</label>
+				</div>
+			</div>
+		</div>
+		
+		<div class="row">
+			<div class="col-sm-8 col-sm-offset-2">
+				<div class="titleExplanation">A bit about the data</div>
+				<div class="explanation">
+					<p>The data was taken from the <a href="http://bl.ocks.org/enjalot/de262983e3ba0c0f89c1">enjalot's block</a> and includes > 5000 different blocks. 
+					He parsed out hex codes, hsl(a), rgb(a), named colors (as found in <a href="http://bl.ocks.org/enjalot/7c0fe907ba2010fed420">this block</a>) and the 4 different <a href="https://github.com/mbostock/d3/wiki/Ordinal-Scales#categorical-colors">d3.scale.category..</a> color palettes in any html, js, css or coffee file found in each block.
+					Because it is rather difficult to figure out which of the d3.scale.category.. colors were actually being used, the choice was made to include each color within the particular scale one time. 
+					This assumption was based on a visual inspection of all blocks that use these scales. There were 66500 different color statements in these blocks that make up 5957 unique colors.</p>
+					<p>I converted each color to its hex, rgb and hsl values and ran these through a Self Organizing Map clustering (I've been using SOM for a few years now to do all kinds of clustering, see my series of <a href="http://www.visualcinnamon.com/portfolio/heatmaps">blog posts about it here</a>).
+					The clustering grouped similar colors together in 600 hexagons (based on their rgb and hsl values: 6 variables in total). The resulting map displays the "average" hex value and the size of each hexagon is scaled to the number of (the 66500) colors that are grouped in each hexagon. 
+					The biggest one, pure black, #000000, has 2700 entries. In essence it is an exercise in trying to map a 3D color space into a 2D plane while also looking at the nuances in colors used in blocks :)</p>
+				</div>
+			</div>	
+		</div>
+		
+	</div>
+		
+		<script type="text/javascript" src="script.js"></script>
+	</body>
+</html>

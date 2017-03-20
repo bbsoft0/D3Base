@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #F7F7F7;
+  shape-rendering: crispEdges;
+}
+
+.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke-width: 1px;
+  opacity: 0.4;
+}
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+
+var margin = {top: 60, right: 80, bottom: 60, left: 80},
+    width = 1000 - margin.left - margin.right,
+    height = 460 - margin.top - margin.bottom;
+
+var x = d3.scale.linear()
+    .range([0, width])
+	.domain([1950,2015]);
+
+var y = d3.scale.linear()
+    .range([height, 0])
+	.domain([65,85]);
+
+var color = d3.scale.ordinal()
+	.range(["#8A9B0F", "#C82026"])
+	.domain(["men", "women"]);
+	
+var colorRange = ['#8a9b0f','#939213','#9b8917','#a3801a','#a9771c','#af6d1e',
+	'#b56320','#ba5622','#bf4924','#c43725','#c82026'];
+var colorSeq = d3.scale.ordinal()
+	.range(colorRange)
+	.domain([d3.range(colorRange.length)]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom")
+	.tickFormat(d3.format("d"));
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+	.ticks(5)
+	.tickSize(-width, 0, 0);
+
+var line = d3.svg.line()
+    .interpolate("cardinal")
+    .x(function(d) { return x(d.year); })
+    .y(function(d) { return y(d.gender); });
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("lifeExpectancy.csv", function(error, data) {
+  if (error) throw error;
+  
+  data.forEach(function (d,i) {
+	  d.year = +d.year;
+	  d.men = +d.men;
+	  d.women = +d.women;
+	  d.diff = d.women - d.men;
+  })
+
+  var rScale = d3.scale.linear()
+	.domain([1, Math.round(d3.max(data, function(d) { return d.diff; })) ])
+	.range([3, 40]);
+	
+  var keys = d3.keys(data[0]).filter(function(key) { return key !== "year" && key !== "diff"; });
+
+  var genderLines = keys.map(function(name) {
+    return {
+      name: name,
+      values: data.map(function(d) {
+        return {
+			year: d.year, 
+			gender: d[name]};
+      })
+    };
+  });
+
+  //Append axes
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+
+	//Wrapper for the background circles
+	var strokes = svg.append("g").attr("class","strokeWrapper");
+
+  	//Append difference circles
+  	data.forEach(function(d,index) {
+	  	var numLoops = Math.round(d.diff);
+	  	  
+	  	for(var j = 1; j < (numLoops+1); j++) {
+		  	strokes.append("circle")
+			  	.attr("cx", x(d.year))
+			  	.attr("cy", y(Math.random() * (d.men*0.95 - d.women*1.05) + d.women*1.05).toFixed(4))
+			  	.attr("r", rScale(j))
+			  	.style("stroke", colorSeq(randomIntFromInterval(0,colorRange.length)))
+				.style("stroke-width", (Math.random() * (0.5 - 6) + 6).toFixed(1))
+				.style("opacity", (Math.random() * (0.05 - 0.1) + 0.1).toFixed(1))
+			  	.style("fill", "none");
+	  	  }//for j
+  	})
+  
+  	//Append the two lines
+  	var lines = svg.selectAll(".lines")
+      	.data(genderLines)
+    	.enter().append("g")
+      	.attr("class", "lines");
+
+	lines.append("path")
+	      	.attr("class", "line")
+	      	.attr("d", function(d) { return line(d.values); })
+	      	.style("stroke", function(d) { return color(d.name); });
+	  
+  	//Append circles
+  	var circles = svg.selectAll(".circleWrapper")
+		  .data(data)
+		  .enter().append("g")
+		  .attr("class","circleWrapper")
+		  .attr("transform", function(d) { return "translate(" + x(d.year) + ")"; });
+	  
+  	//Append men
+	circles.append("circle")
+		  .attr("class", "circleWoman")
+		  .attr("cy", function(d) { return y(d.men); })
+		  .attr("r", 8)
+		  .style("fill", color("men"))
+		  .style("fill-opacity", 0.1);
+
+	 circles.append("circle")
+		  .attr("class", "circleMen")
+		  .attr("cy", function(d) { return y(d.men); })
+		  .attr("r", 3)
+		  .style("fill", color("men"))
+		  .style("stroke", color("men"))
+		  .style("stroke-width", 3)
+		  .style("stroke-opacity", 0.3);
+	
+	//Append women
+	circles.append("circle")
+		  .attr("class", "circleWoman")
+		  .attr("cy", function(d) { return y(d.women); })
+		  .attr("r", 8)
+		  .style("fill", color("women"))
+		  .style("fill-opacity", 0.1);
+		    
+	circles.append("circle")
+		  .attr("class", "circleWoman")
+		  .attr("cy", function(d) { return y(d.women); })
+		  .attr("r", 3)
+		  .style("fill", color("women"))
+		  .style("stroke", color("women"))
+		  .style("stroke-width", 3)
+		  .style("stroke-opacity", 0.3);
+
+});
+
+function randomIntFromInterval(min,max) {
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+
+
+</script>
